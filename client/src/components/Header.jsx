@@ -165,25 +165,32 @@ function Header() {
           </div>
 
           <div className="hidden lg:flex items-center gap-8">
+            {/* Products link — visible to all authenticated users */}
+            {isAuthenticated && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Link
+                  to="/products"
+                  className="flex items-center gap-2 text-white text-sm font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
+                >
+                  Products
+                </Link>
+              </motion.div>
+            )}
+
             {isAuthenticated &&
               (user.role === "ADMIN" || user.role === "MANAGER") && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  whileHover={{ x: 10, scale: 1.02 }}
                 >
-                   <Link
-                    to="/products"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 text-white text-base font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                  >
-                    Products
-                  </Link>
                   <Link
                     to="/admin/dashboard"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 text-white text-base font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
+                    className="flex items-center gap-2 text-white text-sm font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
                   >
                     Dashboard
                   </Link>
@@ -302,6 +309,24 @@ function Header() {
               </motion.div>
 
               <div className="space-y-4">
+                {/* Products link — visible to all authenticated users in mobile menu */}
+                {isAuthenticated && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    whileHover={{ x: 10, scale: 1.02 }}
+                  >
+                    <Link
+                      to="/products"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 text-white text-base font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
+                    >
+                      Products
+                    </Link>
+                  </motion.div>
+                )}
+
                 {isAuthenticated &&
                   (user.role === "ADMIN" || user.role === "MANAGER") && (
                     <motion.div
@@ -310,13 +335,6 @@ function Header() {
                       transition={{ delay: 0.6 }}
                       whileHover={{ x: 10, scale: 1.02 }}
                     >
-                      <Link
-                        to="/products"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center gap-3 text-white text-base font-semibold hover:text-blue-100 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                      >
-                        Products
-                      </Link>
                       <Link
                         to="/admin/dashboard"
                         onClick={() => setIsMenuOpen(false)}
