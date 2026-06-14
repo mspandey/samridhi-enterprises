@@ -1,6 +1,24 @@
-# 🚗 Samridhi Enterprises - Vehicle Spare Parts E-Commerce
+# 🚗 Samridhi Enterprises — Vehicle Spare Parts E-Commerce
 
-**Samridhi Enterprises** is a professional full-stack MERN e-commerce platform designed for managing and selling vehicle spare parts. The project provides a seamless experience for buyers to find parts and for admins/sellers to manage inventory.
+**Samridhi Enterprises** is a professional full-stack MERN e-commerce platform designed for managing and selling vehicle spare parts. The project provides a seamless experience for buyers to find parts and for admins and sellers to manage inventory.
+
+---
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Folder Structure](#-folder-structure)
+- [Local Development Setup](#️-local-development-setup)
+- [Environment Variables](#-environment-variables)
+- [MongoDB Atlas Setup](#-mongodb-atlas-setup)
+- [Cloudinary Setup](#-cloudinary-setup)
+- [Brevo Email Setup](#-brevo-email-setup)
+- [Deployment Guide](#-deployment-guide)
+- [Screenshots](#-screenshots)
+- [Future Roadmap](#-future-roadmap)
+- [ELUSOC 2026 Contribution Guide](#-elusoc-2026-contribution-guide)
+- [Developer Info](#️-developer-info)
 
 ---
 
@@ -27,11 +45,14 @@
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React.js, Vite, Redux Toolkit, Tailwind CSS, Framer Motion, Axios.
-- **Backend:** Node.js, Express.js.
-- **Database:** MongoDB, Mongoose.
-- **Cloud Services:** Cloudinary (Image Storage), Brevo (Email Service).
-- **Deployment:** Vercel (Frontend/Backend).
+| Layer | Technology |
+|---|---|
+| Frontend | React.js, Vite, Redux Toolkit, Tailwind CSS, Framer Motion, Axios |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Image Storage | Cloudinary |
+| Email Service | Brevo (formerly Sendinblue) |
+| Deployment | Vercel (Frontend + Backend) |
 
 ---
 
@@ -39,87 +60,225 @@
 
 ```text
 samridhi-enterprises/
-├── client/              # Frontend React application
-│   ├── public/          # Static assets
-│   ├── src/             # Application source code
-│   │   ├── api/         # Axios instance and API calls
-│   │   ├── components/  # Reusable UI components
-│   │   ├── pages/       # Page-level components
-│   │   └── store/       # Redux state management
-├── server/              # Backend Node.js application
-│   ├── config/          # Database and service configurations
-│   ├── controllers/     # API request handlers
-│   ├── middleware/      # Custom Express middleware
-│   ├── models/          # Mongoose schemas
-│   ├── route/           # API route definitions
-│   └── template/        # Email and document templates
+├── client/                  # Frontend React application
+│   ├── public/              # Static assets
+│   └── src/
+│       ├── api/             # Axios instance and API calls
+│       ├── components/      # Reusable UI components
+│       ├── pages/           # Page-level components
+│       └── store/           # Redux state management
+└── server/                  # Backend Node.js application
+    ├── config/              # Database and service configurations
+    ├── controllers/         # API request handlers
+    ├── middleware/          # Custom Express middleware
+    ├── models/              # Mongoose schemas
+    ├── route/               # API route definitions
+    └── template/            # Email templates
 ```
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Local Development Setup
 
-### Frontend Setup
-1. Navigate to the `client` directory: `cd client`
-2. Install dependencies: `npm install`
-3. Create a `.env` file from `.env.example`.
-4. Start the development server: `npm run dev`
+### Prerequisites
 
-### Backend Setup
-1. Navigate to the `server` directory: `cd server`
-2. Install dependencies: `npm install`
-3. Create a `.env` file from `.env.example`.
-4. Start the development server: `npm run dev`
+Make sure the following are installed before you begin:
+
+| Tool | Version | Download |
+|---|---|---|
+| Node.js | v18 or higher | https://nodejs.org |
+| Git | Any recent version | https://git-scm.com |
+| MongoDB | Local or Atlas | https://mongodb.com |
+
+---
+
+### Step 1 — Clone the repository
+
+```bash
+git clone https://github.com/SRV30/samridhi-enterprises.git
+cd samridhi-enterprises
+```
+
+---
+
+### Step 2 — Set up the backend (server)
+
+```bash
+# Navigate to the server directory
+cd server
+
+# Install dependencies
+npm install
+
+# Copy the environment variables template
+cp .env.example .env
+```
+
+Open `server/.env` and fill in all required values.
+See [Environment Variables](#-environment-variables) below for what each variable means and where to get it.
+
+```bash
+# Start the backend development server (runs on http://localhost:5000)
+npm run dev
+```
+
+---
+
+### Step 3 — Set up the frontend (client)
+
+Open a new terminal window, then:
+
+```bash
+# Navigate to the client directory (from the repo root)
+cd client
+
+# Install dependencies
+npm install
+
+# Copy the environment variables template
+cp .env.example .env
+```
+
+Open `client/.env` and set `VITE_BACKEND_URL` to your running backend URL:
+
+```env
+VITE_BACKEND_URL="http://localhost:5000"
+```
+
+```bash
+# Start the frontend development server (runs on http://localhost:5173)
+npm run dev
+```
+
+The application will be available at **http://localhost:5173**.
 
 ---
 
 ## 🔐 Environment Variables
 
-### Frontend (`client/.env`)
-- `VITE_BACKEND_URL`: URL of the running backend server (e.g., `http://localhost:5000`).
+### Frontend — `client/.env`
 
-### Backend (`server/.env`)
-- `PORT`: Server port (e.g., `5000`).
-- `MONGODB_URL`: MongoDB connection string.
-- `FRONTEND_URL`: URL of the frontend application.
-- `JWT_SECRET`: Secret key for JWT signing.
-- `BREVO_API_KEY`: API key for Brevo email service.
-- `CLOUDINARY_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Cloudinary credentials.
+| Variable | Description | Example |
+|---|---|---|
+| `VITE_BACKEND_URL` | Full URL of the running backend server | `http://localhost:5000` |
+
+---
+
+### Backend — `server/.env`
+
+| Variable | Description | Where to get it |
+|---|---|---|
+| `PORT` | Port the Express server listens on | Any free port, default `5000` |
+| `MONGODB_URL` | MongoDB connection string | MongoDB Atlas → Connect → Drivers |
+| `FRONTEND_URL` | Production URL of your frontend | Your Vercel frontend URL |
+| `FRONTEND_WWW_URL` | `www.` variant of the frontend URL (for CORS) | Same as above with `www.` prefix |
+| `JWT_SECRET` | Secret key used to sign JWT tokens | Any long random string (min 32 chars) |
+| `JWT_EXPIRE` | JWT token expiry duration | `5d` (5 days) |
+| `COOKIE_EXPIRE` | Cookie expiry in days | `7` |
+| `BREVO_API_KEY` | API key for Brevo email service | Brevo dashboard → API Keys |
+| `CLOUDINARY_NAME` | Your Cloudinary cloud name | Cloudinary dashboard → Settings |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | Cloudinary dashboard → API Keys |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | Cloudinary dashboard → API Keys |
+
+> ⚠️ **Never commit your `.env` file.** It is already listed in `.gitignore`. Only commit `.env.example` with placeholder values.
+
+---
+
+## 🍃 MongoDB Atlas Setup
+
+1. Go to [https://cloud.mongodb.com](https://cloud.mongodb.com) and sign in or create a free account.
+2. Click **New Project**, give it a name (e.g. `samridhi`), and click **Create Project**.
+3. Click **Build a Database** → choose **M0 Free Tier** → select your nearest region → click **Create**.
+4. Set a **database username** and **password** — save these, you will need them in the connection string.
+5. Under **Network Access**, click **Add IP Address** → choose **Allow Access from Anywhere** (`0.0.0.0/0`) for development, or add your specific IP for production.
+6. Once the cluster is created, click **Connect** → **Connect your application** → choose **Driver: Node.js** and copy the connection string.
+7. Replace `<password>` in the string with your database password and add your database name before `?`:
+
+```env
+MONGODB_URL=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/samridhi?retryWrites=true&w=majority
+```
+
+8. Paste the full string into `server/.env` as `MONGODB_URL`.
+
+---
+
+## 🌥️ Cloudinary Setup
+
+Cloudinary stores product images uploaded through the admin panel.
+
+1. Go to [https://cloudinary.com](https://cloudinary.com) and sign in or create a free account.
+2. From your **Dashboard**, copy your **Cloud Name**, **API Key**, and **API Secret**.
+3. Add them to `server/.env`:
+
+```env
+CLOUDINARY_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+> The free tier provides 25 GB storage and 25 GB bandwidth per month — more than enough for development.
+
+---
+
+## 📧 Brevo Email Setup
+
+Brevo (formerly Sendinblue) handles transactional emails such as order confirmations and password resets.
+
+1. Go to [https://app.brevo.com](https://app.brevo.com) and sign in or create a free account.
+2. In the top-right menu, click your name → **SMTP & API**.
+3. Click the **API Keys** tab → **Generate a new API key** → give it a name and click **Generate**.
+4. Copy the generated key and add it to `server/.env`:
+
+```env
+BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+5. Under **Senders & Domains**, verify the email address you want to send from. Brevo requires sender verification before emails are delivered.
+
+> The free tier allows up to 300 emails per day.
 
 ---
 
 ## 🌐 Deployment Guide
 
-### Frontend Deployment (Vercel)
-1. Push your code to GitHub.
-2. Connect your repository to Vercel.
-3. Set the root directory to `client`.
-4. Add environment variables in Vercel project settings.
-
 ### Backend Deployment (Vercel)
-1. Push your code to GitHub.
-2. Connect your repository to Vercel.
-3. Set the root directory to `server`.
-4. Configure `vercel.json` as provided in the repository.
-5. Add environment variables in Vercel project settings.
 
-### MongoDB Setup
-1. Create a project on MongoDB Atlas.
-2. Create a cluster and a database.
-3. Get the connection string and add it to your backend `.env` as `MONGODB_URL`.
+The server already includes a `vercel.json` configuration file. No additional setup is needed for routing.
+
+1. Push your code to GitHub.
+2. Go to [https://vercel.com](https://vercel.com) → **New Project** → import your repository.
+3. Set the **Root Directory** to `server`.
+4. Under **Environment Variables**, add all variables from `server/.env`.
+5. Click **Deploy**.
+6. Copy the deployed backend URL (e.g. `https://se-xxx.vercel.app`) — you will need it for the frontend.
+
+---
+
+### Frontend Deployment (Vercel)
+
+1. Go to [https://vercel.com](https://vercel.com) → **New Project** → import the same repository.
+2. Set the **Root Directory** to `client`.
+3. Under **Environment Variables**, add:
+
+```
+VITE_BACKEND_URL = https://your-backend-url.vercel.app
+```
+
+4. Click **Deploy**.
+5. Copy the frontend URL, then go back to your **backend** Vercel project → **Settings → Environment Variables** → update `FRONTEND_URL` and `FRONTEND_WWW_URL` with the new frontend URL, then **Redeploy** the backend.
+
+> ⚠️ **Important:** After deploying the frontend, always redeploy the backend with the updated `FRONTEND_URL` and `FRONTEND_WWW_URL` values. These are used for CORS — requests will be blocked without them.
 
 ---
 
 ## 📸 Screenshots
 
-*Placeholders for screenshots:*
-- ![Home Page](https://via.placeholder.com/800x450?text=Home+Page+Screenshot)
-- ![Product Page](https://via.placeholder.com/800x450?text=Product+Page+Screenshot)
-- ![Admin Dashboard](https://via.placeholder.com/800x450?text=Admin+Dashboard+Screenshot)
+*Screenshots will be added as the project UI is finalized.*
 
 ---
 
 ## 🔮 Future Roadmap
+
 - [ ] Integration of Razorpay/Stripe for payments.
 - [ ] Advanced inventory tracking and compatibility matching.
 - [ ] Real-time order tracking.
@@ -132,22 +291,25 @@ samridhi-enterprises/
 **Target Branch:** `elusoc`
 
 ### Workflow
-1. **Issue:** Find an open issue or create a new one.
-2. **Assignment:** Get assigned to the issue by a Project Admin.
-3. **Development:** Develop the feature/fix on a new branch.
-4. **PR:** Submit a Pull Request targeting the `elusoc` branch.
-5. **Review:** Address any review comments.
-6. **Merge:** PR merged into `elusoc`.
+
+1. **Find an issue:** Browse open issues or create a new one.
+2. **Get assigned:** Comment on the issue and wait for a Project Admin to assign it.
+3. **Branch:** Create a new branch from `elusoc` (e.g. `feature/your-feature-name`).
+4. **Develop:** Make your changes and commit them.
+5. **PR:** Submit a Pull Request targeting the `elusoc` branch.
+6. **Review:** Address any review comments.
+7. **Merge:** PR merged into `elusoc`.
 
 ### Rules
-- Check existing issues before creating new ones.
-- No duplicate issues.
-- No PR without assignment.
+
+- No work without assignment.
+- No duplicate issues — check existing ones first.
+- All PRs must target `elusoc`, not `main`.
 - Resolve merge conflicts before submitting PRs.
 
 ---
 
 ## 🧑‍💻 Developer Info
-**SRV30**
-Full-Stack Developer
+
+**SRV30** — Full-Stack Developer
 GitHub: [@SRV30](https://github.com/SRV30)
