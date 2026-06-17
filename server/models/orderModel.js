@@ -27,6 +27,12 @@ const orderSchema = new mongoose.Schema(
       pincode: { type: String, required: true },
     },
     itemsTotal: { type: Number, required: true, min: 0 },
+    couponCode: { type: String, default: "" },
+    discount: { type: Number, default: 0, min: 0 },
+    // grandTotal = itemsTotal − discount. Not required so that admin
+    // operations calling .save() on pre-coupon orders do not fail
+    // Mongoose validation. New orders always receive this from createOrder.
+    grandTotal: { type: Number, default: 0, min: 0 },
     paymentMethod: {
       type: String,
       enum: ["COD", "Online"],

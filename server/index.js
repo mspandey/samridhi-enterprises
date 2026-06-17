@@ -57,6 +57,7 @@ import partRouter from "./route/partRoutes.js";
 import cartRouter from "./route/cartRoutes.js";
 import orderRouter from "./route/orderRoutes.js";
 import paymentSettingsRouter from "./route/paymentSettingsRoutes.js";
+import couponRouter from "./route/couponRoutes.js";
 
 app.use("/api/user", userRouter);
 app.use("/api/brand", brandRouter);
@@ -65,6 +66,7 @@ app.use("/api/parts", partRouter)
 app.use("/api/cart", cartRouter)
 app.use("/api/orders", orderRouter)
 app.use("/api/payment-settings", paymentSettingsRouter)
+app.use("/api/coupon", couponRouter)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

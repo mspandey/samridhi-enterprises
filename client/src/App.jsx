@@ -30,6 +30,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminPaymentSettings from "./pages/admin/AdminPaymentSettings";
 import InventoryPage from "./pages/admin/InventoryPage";
 import CustomerPage from "./pages/admin/CustomerPage";
+import AdminCoupons from "./pages/admin/AdminCoupons";
 import SupportAssistant from "./components/SupportAssistant";
 
 function App() {
@@ -181,6 +182,14 @@ function App() {
           element={
             <ProtectedRoute isAdmin={true}>
               <CustomerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/coupons"
+          element={
+            <ProtectedRoute isAdmin={true}>
+              <AdminCoupons />
             </ProtectedRoute>
           }
         />

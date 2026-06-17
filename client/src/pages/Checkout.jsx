@@ -11,6 +11,8 @@ import {
   clearOrderSuccess,
 } from "../store/order/orderSlice";
 import { getPaymentSettings } from "../store/order/paymentSettingsSlice";
+import { validateCoupon, clearAppliedCoupon, clearCouponError } from "../store/order/couponSlice";
+import { Tag, X } from "lucide-react";
 import Loader from "../extras/Loader";
 
 const Checkout = () => {
@@ -23,6 +25,10 @@ const Checkout = () => {
   const { loading, error, success, lastCreatedOrder } = useSelector(
     (state) => state.order
   );
+  const { applied: appliedCoupon, loading: couponLoading, error: couponError } = useSelector(
+    (state) => state.coupon
+  );
+  const [couponInput, setCouponInput] = useState("");
 
   const [form, setForm] = useState({
     fullName: "",
@@ -75,6 +81,37 @@ const Checkout = () => {
   }, [success, lastCreatedOrder, paymentMethod, dispatch, navigate]);
 
   const total = useMemo(() => cart?.total || 0, [cart]);
+  const discount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.subtotal !== total) return 0;
+    return appliedCoupon.discount || 0;
+  }, [appliedCoupon, total]);
+  const payable = Math.max(0, total - discount);
+
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.subtotal !== total) {
+      dispatch(clearAppliedCoupon());
+      setCouponInput("");
+    }
+  }, [appliedCoupon, total, dispatch]);
+
+  useEffect(() => {
+    if (couponError) {
+      toast.error(couponError);
+      dispatch(clearCouponError());
+    }
+  }, [couponError, dispatch]);
+
+  const handleApplyCoupon = () => {
+    const code = couponInput.trim();
+    if (!code) { toast.error("Please enter a coupon code"); return; }
+    dispatch(validateCoupon(code));
+  };
+
+  const handleRemoveCoupon = () => {
+    dispatch(clearAppliedCoupon());
+    setCouponInput("");
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -109,6 +146,9 @@ const Checkout = () => {
     fd.append("pincode", form.pincode);
     fd.append("paymentMethod", paymentMethod);
     fd.append("upiReference", upiReference);
+    if (discount > 0 && appliedCoupon?.code) {
+      fd.append("couponCode", appliedCoupon.code);
+    }
     if (paymentMethod === "Online" && screenshot) {
       fd.append("paymentScreenshot", screenshot);
     }
@@ -362,11 +402,42 @@ const Checkout = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <div className="flex justify-between items-center text-xl font-bold">
+              <div className="border-t border-gray-200 pt-4 mb-4">
+                {appliedCoupon && discount > 0 ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
+                      <Tag className="w-4 h-4" />{appliedCoupon.code} applied
+                    </span>
+                    <button onClick={handleRemoveCoupon} className="text-emerald-700 hover:text-emerald-900" title="Remove coupon">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="Coupon code"
+                      className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-blue-400 outline-none"
+                    />
+                    <button onClick={handleApplyCoupon} disabled={couponLoading}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold disabled:opacity-60">
+                      {couponLoading ? "..." : "Apply"}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-gray-200 pt-4 mb-6 space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Subtotal</span><span>₹{total.toLocaleString()}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-emerald-600">
+                    <span>Discount</span><span>-₹{discount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-xl font-bold pt-2 border-t border-gray-100">
                   <span className="text-gray-900">Total</span>
                   <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                    ₹{total.toLocaleString()}
+                    ₹{payable.toLocaleString()}
                   </span>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import Order from "../models/orderModel.js";
 import Cart from "../models/cartModel.js";
+import Coupon from "../models/couponModel.js";
 import User from "../models/userModel.js";
 import Part from "../models/partModel.js";
 import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
@@ -31,8 +32,16 @@ export const createOrder = catchAsyncErrors(async (req, res, next) => {
       .json({ success: false, message: "Your cart is empty" });
   }
 
-  const { fullName, phone, addressLine, city, state, pincode, upiReference } =
-    req.body;
+  const {
+    fullName,
+    phone,
+    addressLine,
+    city,
+    state,
+    pincode,
+    upiReference,
+    couponCode,
+  } = req.body;
   const paymentMethod = req.body.paymentMethod;
 
   const shippingAddress = { fullName, phone, addressLine, city, state, pincode };
@@ -110,6 +119,38 @@ export const createOrder = catchAsyncErrors(async (req, res, next) => {
     0
   );
 
+  // Re-validate the coupon (if any) server-side — never trust client discount amount.
+  let appliedCouponCode = "";
+  let discount = 0;
+  if (couponCode && String(couponCode).trim()) {
+    const coupon = await Coupon.findOne({
+      code: String(couponCode).trim().toUpperCase(),
+    });
+    if (!coupon) {
+      return res.status(400).json({ success: false, message: "Invalid coupon code" });
+    }
+    const redeemable = coupon.isRedeemable();
+    if (!redeemable.ok) {
+      return res.status(400).json({ success: false, message: redeemable.reason });
+    }
+    const computed = coupon.computeDiscount(itemsTotal);
+    if (computed <= 0) {
+      return res.status(400).json({ success: false, message: "This coupon does not apply to your order" });
+    }
+    const claim = await Coupon.findOneAndUpdate(
+      { _id: coupon._id, $or: [{ usageLimit: 0 }, { $expr: { $lt: ["$usedCount", "$usageLimit"] } }] },
+      { $inc: { usedCount: 1 } },
+      { new: true }
+    );
+    if (!claim) {
+      return res.status(400).json({ success: false, message: "This coupon has reached its usage limit" });
+    }
+    appliedCouponCode = coupon.code;
+    discount = computed;
+  }
+
+  const grandTotal = Math.max(0, itemsTotal - discount);
+
   let paymentScreenshot = { public_id: "", url: "" };
   let paymentStatus;
   let orderStatus;
@@ -145,6 +186,9 @@ export const createOrder = catchAsyncErrors(async (req, res, next) => {
     items,
     shippingAddress,
     itemsTotal,
+    couponCode: appliedCouponCode,
+    discount,
+    grandTotal,
     paymentMethod,
     paymentStatus,
     orderStatus,
@@ -179,8 +223,12 @@ export const createOrder = catchAsyncErrors(async (req, res, next) => {
           <h2 style="color:#111827;">Thank you for your order!</h2>
           <p style="color:#555;">We have received your order <strong>${order._id}</strong> and your payment screenshot.</p>
           <p style="color:#555;">Our team will verify your payment shortly. You will receive a confirmation email with your receipt once it is approved.</p>
+          ${discount > 0
+            ? `<p style="color:#555;">Subtotal: Rs. ${Number(itemsTotal).toLocaleString("en-IN")}</p>
+          <p style="color:#16a34a;">Discount (${appliedCouponCode}): -Rs. ${Number(discount).toLocaleString("en-IN")}</p>`
+            : ""}
           <p style="color:#555;">Order total: <strong>Rs. ${Number(
-            itemsTotal
+            grandTotal
           ).toLocaleString("en-IN")}</strong></p>
         </div>`,
       });
