@@ -22,12 +22,12 @@ cloudinary.config({
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.FRONTEND_WWW_URL,
   "http://localhost:5173",
-];
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -43,8 +43,10 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(errorMiddleware);
 
+// routes here
+
+app.use(errorMiddleware);
 app.get("/", (req, res) => {
   res.send("Server is running: " + PORT);
 });
@@ -72,8 +74,12 @@ app.use("/api/coupon", couponRouter)
 app.use("/api/support", supportTicketRouter)
 app.use("/api/address", addressRouter)
 
+let server;
+
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+  server = app.listen(PORT, () =>
+    console.log(`Server is running on port ${PORT}`)
+  );
 });
 
 process.on("unhandledRejection", (err) => {
