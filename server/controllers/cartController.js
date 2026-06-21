@@ -53,14 +53,39 @@ export const getCart = catchAsyncErrors(async (req, res, next) => {
       items: [],
       total: 0,
     });
-  } else {
-    cart.items = cart.items.filter(
-      (item) => item.part !== null && item.part !== undefined
-    );
-    cart.total = cart.items.reduce((sum, item) => sum + item.price, 0);
-    await cart.save();
+    return res.status(200).json({ success: true, warnings: [], cart });
   }
-  res.status(200).json({ success: true, cart });
+
+  // 1. Filter out items where the underlying part was deleted
+  cart.items = cart.items.filter(
+    (item) => item.part !== null && item.part !== undefined
+  );
+
+  // 2. Validate and adjust quantities based on available stock, building warnings list
+  const warnings = [];
+  const adjustedItems = [];
+
+  for (const item of cart.items) {
+    const part = item.part;
+    if (part.stock <= 0) {
+      warnings.push(`${part.name} is out of stock and has been removed from your cart.`);
+    } else if (part.stock < item.quantity) {
+      warnings.push(`Quantity for ${part.name} has been adjusted to ${part.stock} due to limited stock.`);
+      item.quantity = part.stock;
+      item.price = part.price * part.stock;
+      adjustedItems.push(item);
+    } else {
+      // Keep price updated to current product price
+      item.price = part.price * item.quantity;
+      adjustedItems.push(item);
+    }
+  }
+
+  cart.items = adjustedItems;
+  cart.total = cart.items.reduce((sum, item) => sum + item.price, 0);
+  await cart.save();
+
+  res.status(200).json({ success: true, warnings, cart });
 });
 
 export const updateCartItem = catchAsyncErrors(async (req, res, next) => {
