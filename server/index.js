@@ -13,12 +13,13 @@ process.on("uncaughtException", (err) => {
   console.error(`Shutting down the server due to Uncaught Exception`);
   process.exit(1);
 });
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+if (
+  !process.env.CLOUDINARY_NAME ||
+  !process.env.CLOUDINARY_API_KEY ||
+  !process.env.CLOUDINARY_API_SECRET
+) {
+  throw new Error("Cloudinary configuration missing");
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
