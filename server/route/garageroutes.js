@@ -7,6 +7,7 @@ import {
   updateVehicle,
   deleteVehicle,
   setDefaultVehicle,
+  getRecommendedProducts,
 } from "../controllers/garageController.js";
 
 const router = express.Router();
@@ -14,8 +15,8 @@ const router = express.Router();
 router.route("/")
   .post(auth, addVehicle)
   .get(auth, getVehicles);
-
-router.route("/:id")
+router.route("/recommendations")
+  .get(auth, getRecommendedProducts);
   .put(auth, updateVehicle)
   .delete(auth, deleteVehicle);
 
