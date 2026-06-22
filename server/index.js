@@ -60,7 +60,7 @@ import paymentSettingsRouter from "./route/paymentSettingsRoutes.js";
 import couponRouter from "./route/couponRoutes.js";
 import supportTicketRouter from "./route/supportTicketRoutes.js";
 import addressRouter from "./route/addressRoutes.js";
-
+import garageRouter from "./route/garageRoutes.js";
 app.use("/api/user", userRouter);
 app.use("/api/brand", brandRouter);
 app.use("/api/bike-model", bikeModelRouter);
@@ -71,7 +71,7 @@ app.use("/api/payment-settings", paymentSettingsRouter)
 app.use("/api/coupon", couponRouter)
 app.use("/api/support", supportTicketRouter)
 app.use("/api/address", addressRouter)
-
+app.use("/api/garage", garageRouter)
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 });
