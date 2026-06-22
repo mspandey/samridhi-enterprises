@@ -50,3 +50,19 @@ export const getVehicles = async (req, res, next) => {
     next(error);
   }
 };
+export const getVehicles = async (req, res, next) => {
+  try {
+    const vehicles = await Garage.find({
+      user: req.user._id,
+    });
+
+    res.status(200).json({
+      success: true,
+      vehicles,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+};
