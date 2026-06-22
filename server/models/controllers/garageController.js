@@ -1,4 +1,5 @@
  import Garage from "../models/garageModel.js";
+import Part from "../models/partModel.js";
 
 export const addVehicle = async (req, res, next) => {
   try {
@@ -36,6 +37,7 @@ export const addVehicle = async (req, res, next) => {
   }
 };
 
+
 export const getVehicles = async (req, res, next) => {
   try {
     const vehicles = await Garage.find({
@@ -49,21 +51,6 @@ export const getVehicles = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-export const getVehicles = async (req, res, next) => {
-  try {
-    const vehicles = await Garage.find({
-      user: req.user._id,
-    });
-
-    res.status(200).json({
-      success: true,
-      vehicles,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 };
 export const updateVehicle = async (req, res, next) => {
@@ -76,8 +63,11 @@ export const updateVehicle = async (req, res, next) => {
         message: "Vehicle not found",
       });
     }
-
-    const updatedVehicle = await Garage.findByIdAndUpdate(
+const vehicle = await Garage.findOne({
+  _id: req.params.id,
+  user: req.user._id,
+});
+   const updatedVehicle = await Garage.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
@@ -96,7 +86,10 @@ export const updateVehicle = async (req, res, next) => {
 };
 export const deleteVehicle = async (req, res, next) => {
   try {
-    const vehicle = await Garage.findById(req.params.id);
+    const vehicle = await Garage.findOne({
+  _id: req.params.id,
+  user: req.user._id,
+});
 
     if (!vehicle) {
       return res.status(404).json({
@@ -116,8 +109,10 @@ export const deleteVehicle = async (req, res, next) => {
   }
 };
 export const setDefaultVehicle = async (req, res, next) => {
-  try {
-    const vehicle = await Garage.findById(req.params.id);
+  try {const vehicle = await Garage.findOne({
+  _id: req.params.id,
+  user: req.user._id,
+});
 
     if (!vehicle) {
       return res.status(404).json({
@@ -142,6 +137,32 @@ export const setDefaultVehicle = async (req, res, next) => {
     res.status(200).json({
       success: true,
       vehicle,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const getRecommendedProducts = async (req, res, next) => {
+  try {
+    const defaultVehicle = await Garage.findOne({
+      user: req.user._id,
+      isDefault: true,
+    });
+
+    if (!defaultVehicle) {
+      return res.status(404).json({
+        success: false,
+        message: "No default vehicle found",
+      });
+    }
+
+    const products = await Part.find({
+      vehicleCompatibility: defaultVehicle.bikeModel,
+    });
+
+    res.status(200).json({
+      success: true,
+      products,
     });
   } catch (error) {
     next(error);
