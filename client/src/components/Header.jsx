@@ -1,6 +1,8 @@
 import {
   CircleUser,
   ShoppingCart,
+  Sun,
+  Moon,
   Menu,
   X,
   Sparkles,
@@ -16,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "@/store/auth-slice/user";
+import { useTheme } from "@/context/ThemeContext";
 import SearchBar from "./SearchBar";
 import { toast } from "react-toastify";
 import { useState, useEffect, useRef } from "react";
@@ -23,6 +26,7 @@ import { useState, useEffect, useRef } from "react";
 function Header() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
+  const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -188,8 +192,8 @@ function Header() {
       animate="animate"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-gradient-to-r from-blue-400/95 via-blue-500/95 to-blue-400/95 shadow-xl shadow-blue-500/25"
-          : "bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 shadow-lg"
+          ? "bg-gradient-to-r from-blue-400/95 via-blue-500/95 to-blue-400/95 shadow-xl shadow-blue-500/25 dark:from-blue-950/95 dark:via-blue-900/95 dark:to-blue-950/95"
+          : "bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 shadow-lg dark:from-blue-950 dark:via-blue-900 dark:to-blue-950"
       }`}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
@@ -362,6 +366,27 @@ function Header() {
                 </Link>
               </motion.div>
             )}
+
+            {/* ── Theme toggle ── */}
+            <motion.button
+              type="button"
+              onClick={toggleTheme}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              className="text-white p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 transition-all duration-300"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </motion.button>
 
             {/* ── Cart icon ── */}
             <motion.div
@@ -566,6 +591,32 @@ function Header() {
                         </div>
                         Cart
                       </Link>
+                    </motion.div>
+
+                    {/* Theme toggle (mobile) */}
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.37 }}
+                      whileHover={{ x: 6 }}
+                    >
+                      <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className={mobileNavLinkClass("/__theme")}
+                        aria-label={
+                          theme === "dark"
+                            ? "Switch to light mode"
+                            : "Switch to dark mode"
+                        }
+                      >
+                        {theme === "dark" ? (
+                          <Sun className="w-5 h-5" />
+                        ) : (
+                          <Moon className="w-5 h-5" />
+                        )}
+                        {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                      </button>
                     </motion.div>
 
                     {/* Logout */}
