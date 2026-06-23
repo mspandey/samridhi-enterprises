@@ -138,7 +138,7 @@ export const createOrUpdateReview = catchAsyncErrors(async (req, res, next) => {
     : 0;
 
   await part.save();
-  res.status(200).json({ success: true, message: "Review submitted" });
+  res.status(200).json({ success: true, message: "Review submitted", part });
 });
 
 // Get similar / recommended parts for a given part.
@@ -226,5 +226,5 @@ export const deleteReview = catchAsyncErrors(async (req, res, next) => {
     : 0;
 
   await part.save();
-  res.status(200).json({ success: true, message: "Review removed" });
+res.status(200).json({ success: true, message: "Review removed", part });
 });

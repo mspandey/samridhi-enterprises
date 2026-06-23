@@ -5,6 +5,7 @@ import {
   updateCartItem,
   removeFromCart,
   clearError,
+  clearWarnings,
 } from "../store/cart/cartSlice";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { cart, loading, error } = useSelector((state) => state.cart);
+  const { cart, loading, error, warnings } = useSelector((state) => state.cart);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -239,6 +240,49 @@ const Cart = () => {
             your cart
           </p>
         </motion.div>
+
+        {warnings && warnings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 bg-amber-50/90 backdrop-blur-sm border border-amber-200/50 rounded-3xl flex items-start gap-4 shadow-md"
+          >
+            <div className="p-2 bg-amber-100 text-amber-800 rounded-xl flex-shrink-0">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-lg font-bold text-amber-900 mb-1">
+                Important Stock Updates
+              </h4>
+              <ul className="list-disc pl-5 space-y-1 text-amber-800 font-medium text-sm sm:text-base">
+                {warnings.map((warning, idx) => (
+                  <li key={idx}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+            <button
+              onClick={() => dispatch(clearWarnings())}
+              className="text-amber-500 hover:text-amber-700 transition-colors p-1 flex-shrink-0"
+              aria-label="Dismiss warnings"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 lg:gap-12">
           <motion.div variants={itemVariants} className="xl:col-span-2">

@@ -38,7 +38,7 @@ export const fetchCart = createAsyncThunk(
       };
       const response = await axiosInstance.get(`${API_URL}`, config);
       console.log("fetchCart response:", response.data);
-      return response.data.cart;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -116,6 +116,7 @@ const cartSlice = createSlice({
   name: "cart",
   initialState: {
     cart: { items: [], total: 0 },
+    warnings: [],
     loading: false,
     error: null,
     success: false,
@@ -126,6 +127,9 @@ const cartSlice = createSlice({
     },
     clearSuccess: (state) => {
       state.success = false;
+    },
+    clearWarnings: (state) => {
+      state.warnings = [];
     },
   },
   extraReducers: (builder) => {
@@ -140,6 +144,7 @@ const cartSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.cart = action.payload;
+        state.warnings = [];
         state.error = null;
       })
       .addCase(addToCart.rejected, (state, action) => {
@@ -154,7 +159,8 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.cart = action.payload;
+        state.cart = action.payload.cart;
+        state.warnings = action.payload.warnings || [];
         state.error = null;
       })
       .addCase(fetchCart.rejected, (state, action) => {
@@ -172,6 +178,7 @@ const cartSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.cart = action.payload;
+        state.warnings = [];
         state.error = null;
       })
       .addCase(updateCartItem.rejected, (state, action) => {
@@ -189,6 +196,7 @@ const cartSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.cart = action.payload;
+        state.warnings = [];
         state.error = null;
       })
       .addCase(removeFromCart.rejected, (state, action) => {
@@ -206,6 +214,7 @@ const cartSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.cart = action.payload;
+        state.warnings = [];
         state.error = null;
       })
       .addCase(clearCart.rejected, (state, action) => {
@@ -215,5 +224,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess } = cartSlice.actions;
+export const { clearError, clearSuccess, clearWarnings } = cartSlice.actions;
 export default cartSlice.reducer;

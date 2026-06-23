@@ -253,8 +253,13 @@ const partSlice = createSlice({
       .addCase(createOrUpdateReview.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        if (state.part && state.part._id === action.meta.arg.partId) {
-          state.part = { ...state.part, reviews: action.payload.part.reviews, ratings: action.payload.part.ratings, numOfReviews: action.payload.part.numOfReviews };
+        if (state.part && state.part._id === action.meta.arg.partId && action.payload?.part) {
+          state.part = {
+            ...state.part,
+            reviews: action.payload.part.reviews,
+            ratings: action.payload.part.ratings,
+            numOfReviews: action.payload.part.numOfReviews,
+          };
         }
       })
       .addCase(createOrUpdateReview.rejected, (state, action) => {
@@ -269,8 +274,13 @@ const partSlice = createSlice({
       .addCase(deleteReview.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        if (state.part && state.part._id === action.payload.partId) {
-          state.part = { ...state.part, reviews: action.payload.part.reviews, ratings: action.payload.part.ratings, numOfReviews: action.payload.part.numOfReviews };
+        if (state.part && state.part._id === action.payload?.partId && action.payload?.part) {
+          state.part = {
+            ...state.part,
+            reviews: action.payload.part.reviews,
+            ratings: action.payload.part.ratings,
+            numOfReviews: action.payload.part.numOfReviews,
+          };
         }
       })
       .addCase(deleteReview.rejected, (state, action) => {
