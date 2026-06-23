@@ -122,13 +122,10 @@ export const verifyEmailOtp = catchAsyncErrors(async (req, res, next) => {
 export const resendOtp = catchAsyncErrors(async (req, res, next) => {
   try {
     const { email } = req.body;
+const user = await UserModel.findOne({ email }).select("+password");
 
-    const user = await UserModel.findOne({ email });
-
-    if (!user) {
-      return next(new ErrorHandler("Email not registered.", 400));
-    }
-
+  if (!user) {
+   
     const newOtp = generatedOtp();
     const newExpiry = new Date();
     newExpiry.setMinutes(newExpiry.getMinutes() + 15);
@@ -427,11 +424,7 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
-  try {
-    console.log("Checking User model:", UserModel);
-
-    console.log("User ID:", req.user?._id);
-
+ try {
     const user = await UserModel.findById(req.user._id);
 
     if (!user) {
