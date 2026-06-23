@@ -80,15 +80,23 @@ const SearchBar = ({
       .map(([category]) => category);
   }, [catalog]);
 
-  // Suggestions while typing: matching product names first, then categories.
+// Suggestions while typing: matching products (name/brand/vehicle) first, then categories.
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    const nameMatches = index.names
-      .filter((n) => n.toLowerCase().includes(q))
+
+    const productMatches = (catalog || [])
+      .filter(
+        (p) =>
+          p?.name?.toLowerCase().includes(q) ||
+          p?.brand?.toLowerCase().includes(q) ||
+          p?.vehicle?.toLowerCase().includes(q) ||
+          p?.compatibleVehicles?.join(" ").toLowerCase().includes(q)
+      )
       .slice(0, MAX_SUGGESTIONS)
-      .map((value) => ({ type: "product", value }));
-    const remaining = MAX_SUGGESTIONS - nameMatches.length;
+      .map((product) => ({ type: "product", value: product.name, product }));
+
+    const remaining = MAX_SUGGESTIONS - productMatches.length;
     const categoryMatches =
       remaining > 0
         ? index.categories
@@ -96,8 +104,9 @@ const SearchBar = ({
             .slice(0, remaining)
             .map((value) => ({ type: "category", value }))
         : [];
-    return [...nameMatches, ...categoryMatches];
-  }, [query, index]);
+
+    return [...productMatches, ...categoryMatches];
+  }, [query, catalog, index.categories]);
 
   // Flat list the dropdown currently shows (drives keyboard navigation).
   const items = useMemo(() => {
