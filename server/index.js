@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cloudinary from "cloudinary";
 import connectDB from "./config/connectDB.js";
 import errorMiddleware from "./middleware/error.js";
+import requestLogger from "./middleware/requestLogger.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(requestLogger);
 
 app.get("/", (req, res) => {
   res.send("Server is running: " + PORT);
