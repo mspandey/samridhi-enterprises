@@ -57,9 +57,6 @@ export const getAllParts = catchAsyncErrors(async (req, res) => {
     parts,
   });
 });
-  const parts = await Part.find().populate("vehicleCompatibility", "name");
-  res.status(200).json({ success: true, count: parts.length, parts });
-});
 
 // Get single part
 export const getPartById = catchAsyncErrors(async (req, res, next) => {

@@ -8,7 +8,6 @@ import errorMiddleware from "./middleware/error.js";
 
 dotenv.config();
 
-
 process.on("uncaughtException", (err) => {
   console.error(`Error: ${err.message}`);
   console.error(`Shutting down the server due to Uncaught Exception`);
@@ -29,6 +28,7 @@ const allowedOrigins = [
   process.env.FRONTEND_WWW_URL,
   "http://localhost:5173",
 ];
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -46,7 +46,6 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-
   res.send("Server is running: " + PORT);
 });
 
@@ -77,7 +76,6 @@ app.use("/api/address", addressRouter)
 app.use(errorMiddleware);
 
 connectDB().then(() => {
-
   app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 });
 
