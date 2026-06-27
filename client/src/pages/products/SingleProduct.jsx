@@ -6,6 +6,7 @@ import {
   fetchPartById,
   fetchSimilarParts,
   fetchFrequentlyBoughtTogether,
+  fetchRecommendedForYou,
   createOrUpdateReview,
   deleteReview,
   clearPartError,
@@ -24,7 +25,7 @@ const SingleProduct = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { part, loading, error, parts, similarParts, fbtParts } =
+  const { part, loading, error, parts, similarParts, fbtParts, recommendedParts } =
     useSelector((state) => state.parts);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { wishlist } = useSelector((state) => state.wishlist);
@@ -43,9 +44,13 @@ const SingleProduct = () => {
     dispatch(fetchParts());
   }, [dispatch, id]);
 
-  // Personalized "Recommended For You" is handled in a follow-up PR — the
-  // RFY endpoint requires auth and reads cart/wishlist/orders. For now,
-  // the section falls back to the client-side different-category filter below.
+  // Personalized "Recommended For You" — only when the user is logged in
+  // (the endpoint is user-specific and reads their cart / wishlist / orders).
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchRecommendedForYou());
+    }
+  }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
     if (error) {
@@ -80,10 +85,18 @@ const SingleProduct = () => {
           .slice(0, 5)
       : [];
 
-  // Filter for Recommended For You (Different categories, excluding current product)
-  const recommendedForYou = parts && part
-    ? parts.filter((p) => p._id !== part._id && p.category !== part.category).slice(0, 5)
-    : [];
+  // Recommended For You — uses the personalized backend endpoint
+  // (recommendedParts, based on the user's cart / wishlist / order history).
+  // For logged-out users, falls back to a simple different-category sample so
+  // the section still shows relevant products.
+  const recommendedForYou =
+    recommendedParts && recommendedParts.length > 0
+      ? recommendedParts
+      : parts && part
+      ? parts
+          .filter((p) => p._id !== part._id && p.category !== part.category)
+          .slice(0, 5)
+      : [];
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       toast.error("Please log in to add items to cart");

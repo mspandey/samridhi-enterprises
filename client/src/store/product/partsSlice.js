@@ -72,6 +72,25 @@ export const fetchFrequentlyBoughtTogether = createAsyncThunk(
   }
 );
 
+export const fetchRecommendedForYou = createAsyncThunk(
+  "part/fetchRecommendedForYou",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await axiosInstance.get(
+        `${API_URL}/recommendations/for-you`,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 export const updatePart = createAsyncThunk(
   "part/update",
   async ({ id, formData }, { rejectWithValue }) => {
@@ -166,6 +185,9 @@ const partSlice = createSlice({
     fbtParts: [],
     fbtLoading: false,
     fbtError: null,
+    recommendedParts: [],
+    recommendedLoading: false,
+    recommendedError: null,
     loading: false,
     error: null,
     success: false,
@@ -243,6 +265,18 @@ const partSlice = createSlice({
       .addCase(fetchFrequentlyBoughtTogether.rejected, (state, action) => {
         state.fbtLoading = false;
         state.fbtError = action.payload;
+      })
+      .addCase(fetchRecommendedForYou.pending, (state) => {
+        state.recommendedLoading = true;
+        state.recommendedError = null;
+      })
+      .addCase(fetchRecommendedForYou.fulfilled, (state, action) => {
+        state.recommendedLoading = false;
+        state.recommendedParts = action.payload.parts;
+      })
+      .addCase(fetchRecommendedForYou.rejected, (state, action) => {
+        state.recommendedLoading = false;
+        state.recommendedError = action.payload;
       })
       .addCase(updatePart.pending, (state) => {
         state.loading = true;

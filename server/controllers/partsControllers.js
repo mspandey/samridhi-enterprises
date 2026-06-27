@@ -1,5 +1,7 @@
 import Part from "../models/partModel.js";
 import Order from "../models/orderModel.js";
+import Cart from "../models/cartModel.js";
+import Wishlist from "../models/wishlistModel.js";
 import BikeModel from "../models/bikeModel.js";
 import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
 import ErrorHandler from "../utils/errorHandler.js";
@@ -300,6 +302,112 @@ export const getFrequentlyBoughtTogether = catchAsyncErrors(
     });
   }
 );
+
+// Get personalized "Recommended For You" products for the logged-in user.
+//
+// Builds a lightweight taste profile from the user's own activity — the
+// categories of the parts in their cart, their wishlist, and their past
+// (non-cancelled) orders. Categories the user engages with more often are
+// weighted higher (a category that shows up across cart + wishlist + orders
+// outranks one seen once). We then recommend the best products (bestseller,
+// then rating, then review count) from those preferred categories, excluding
+// anything the user already has in cart / wishlist / past orders so we surface
+// genuinely new suggestions.
+//
+// Fallbacks keep the section useful for everyone:
+//   - A brand-new user with no cart / wishlist / orders gets top catalogue
+//     products (bestseller + highest rated).
+//   - If the preferred-category pool is too small, we top up with general
+//     best products so the row is never sparse.
+//
+// Requires auth (the route is mounted behind the auth middleware) so req.user
+// is always present.
+export const getRecommendedForYou = catchAsyncErrors(async (req, res, next) => {
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 8, 1), 20);
+  const userId = req.user._id;
+
+  // Gather the user's signal parts from cart, wishlist, and past orders.
+  const [cart, wishlist, orders] = await Promise.all([
+    Cart.findOne({ user: userId }).select("items.part"),
+    Wishlist.findOne({ user: userId }).select("items.part"),
+    Order.find({ user: userId, orderStatus: { $ne: "Cancelled" } }).select(
+      "items.part"
+    ),
+  ]);
+
+  // Collect the ids of parts the user already has (to exclude from results)
+  // and use as the signal for category preference.
+  const ownedIds = new Set();
+
+  const addPart = (partRef) => {
+    if (!partRef) return;
+    ownedIds.add(partRef.toString());
+  };
+
+  (cart?.items || []).forEach((i) => addPart(i.part));
+  (wishlist?.items || []).forEach((i) => addPart(i.part));
+  (orders || []).forEach((o) => (o.items || []).forEach((i) => addPart(i.part)));
+
+  // Resolve the signal parts to learn their categories and weight them.
+  const categoryWeights = new Map();
+  if (ownedIds.size > 0) {
+    const signalParts = await Part.find({
+      _id: { $in: [...ownedIds] },
+    }).select("category");
+    for (const p of signalParts) {
+      if (p.category) {
+        categoryWeights.set(
+          p.category,
+          (categoryWeights.get(p.category) || 0) + 1
+        );
+      }
+    }
+  }
+
+  const preferredCategories = [...categoryWeights.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat]) => cat);
+
+  const ownedArray = [...ownedIds];
+  let parts = [];
+
+  // Primary: best products from the user's preferred categories, excluding
+  // what they already have.
+  if (preferredCategories.length > 0) {
+    parts = await Part.find({
+      _id: { $nin: ownedArray },
+      category: { $in: preferredCategories },
+    })
+      .select(
+        "product_id name price stock category images ratings numOfReviews bestseller"
+      )
+      .sort({ bestseller: -1, ratings: -1, numOfReviews: -1 })
+      .limit(limit);
+  }
+
+  // Top up (or full fallback for new users) with general best products.
+  if (parts.length < limit) {
+    const excludeIds = [
+      ...new Set([...ownedArray, ...parts.map((p) => p._id.toString())]),
+    ];
+    const filler = await Part.find({
+      _id: { $nin: excludeIds },
+    })
+      .select(
+        "product_id name price stock category images ratings numOfReviews bestseller"
+      )
+      .sort({ bestseller: -1, ratings: -1, numOfReviews: -1 })
+      .limit(limit - parts.length);
+    parts = parts.concat(filler);
+  }
+
+  res.status(200).json({
+    success: true,
+    count: parts.length,
+    parts,
+    personalized: preferredCategories.length > 0,
+  });
+});
 
 // Delete review
 export const deleteReview = catchAsyncErrors(async (req, res, next) => {
