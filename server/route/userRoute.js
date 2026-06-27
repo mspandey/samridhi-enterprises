@@ -19,7 +19,7 @@ import {
   verifyOtp,
 } from "../controllers/userController.js";
 import auth from "../middleware/auth.js";
-import upload from "../middleware/multer.js";
+import { upload, validateImageSignature } from "../middleware/multer.js";
 import admin from "../middleware/Admin.js";
 
 const userRouter = express.Router();
@@ -33,8 +33,7 @@ userRouter.post("/resend-otp", resendOtp);
 userRouter.post("/login", loginUser);
 
 userRouter.get("/logout", logoutUser);
-
-userRouter.put("/upload-avatar", upload.single("avatar"), auth, uploadAvatar);
+userRouter.put("/upload-avatar", auth, upload.single("avatar"), validateImageSignature, uploadAvatar);
 
 userRouter.put("/update/password", auth, updatePassword);
 
@@ -46,12 +45,7 @@ userRouter.put("/reset-password", resetPassword);
 
 userRouter.get("/me", auth, getUserDetails);
 
-userRouter.put(
-  "/update-user",
-  auth,
-  upload.single("avatar"),
-  updateUserDetails
-);
+userRouter.put("/update-user", auth, upload.single("avatar"), validateImageSignature, updateUserDetails);
 
 userRouter.get("/admin/get", auth, admin, getAllUsers);
 
