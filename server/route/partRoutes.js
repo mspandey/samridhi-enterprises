@@ -1,6 +1,6 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import upload from "../middleware/multer.js";
+import { upload, validateImageSignature } from "../middleware/multer.js";
 import {
   addPart,
   getAllParts,
@@ -45,7 +45,7 @@ const recommendLimiter = rateLimit({
 
 const partRouter = express.Router();
 
-partRouter.post("/add", upload.array("images", 5), auth, admin, addPart);
+partRouter.post("/add", upload.array("images", 5), validateImageSignature, auth, admin, addPart);
 partRouter.get("/get", browseLimiter, getAllParts);
 partRouter.get("/get/:id", browseLimiter, getPartById);
 partRouter.get("/get/:id/similar", browseLimiter, getSimilarParts);
@@ -60,13 +60,7 @@ partRouter.get(
   auth,
   getRecommendedForYou
 );
-partRouter.put(
-  "/update/:id",
-  upload.array("images", 5),
-  auth,
-  admin,
-  updatePart
-);
+partRouter.put("/update/:id", upload.array("images", 5), validateImageSignature, auth, admin, updatePart);
 partRouter.delete("/delete/:id", auth, admin, deletePart);
 partRouter.post("/review/:id", auth, createOrUpdateReview);
 partRouter.delete("/review/:id", auth, deleteReview);
