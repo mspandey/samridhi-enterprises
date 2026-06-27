@@ -16,6 +16,7 @@ import {
 import auth from "../middleware/auth.js";
 import admin from "../middleware/Admin.js";
 
+
 // Rate limiter for public catalogue-browsing endpoints (no auth required).
 // Allows generous traffic for real shoppers while guarding against scrapers
 // and incidental abuse that would hammer the database.
@@ -28,6 +29,11 @@ const browseLimiter = rateLimit({
     success: false,
     message: "Too many requests, please try again later.",
   },
+});
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit to 20 requests per 15 minutes
+  message: { success: false, message: "Too many admin requests, please try again later." },
 });
 
 // Slightly tighter limiter for the personalized recommendations endpoint,
@@ -45,7 +51,7 @@ const recommendLimiter = rateLimit({
 
 const partRouter = express.Router();
 
-partRouter.post("/add", upload.array("images", 5), auth, admin, addPart);
+
 partRouter.get("/get", browseLimiter, getAllParts);
 partRouter.get("/get/:id", browseLimiter, getPartById);
 partRouter.get("/get/:id/similar", browseLimiter, getSimilarParts);
@@ -60,13 +66,9 @@ partRouter.get(
   auth,
   getRecommendedForYou
 );
-partRouter.put(
-  "/update/:id",
-  upload.array("images", 5),
-  auth,
-  admin,
-  updatePart
-);
+partRouter.post("/add", adminLimiter, upload.array("images", 5), validateImageSignature, auth, admin, addPart);
+
+partRouter.put("/update/:id", adminLimiter, upload.array("images", 5), validateImageSignature, auth, admin, updatePart);
 partRouter.delete("/delete/:id", auth, admin, deletePart);
 partRouter.post("/review/:id", auth, createOrUpdateReview);
 partRouter.delete("/review/:id", auth, deleteReview);
